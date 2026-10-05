@@ -32,7 +32,8 @@ export async function vercelFetch(
 
     // If response.ok is false throw an error including response.status
     if (!response.ok) {
-        throw new Error(`Vercel API request failed with status ${response.status}`);
+        const body = await response.text();
+        throw new Error(`Vercel API request failed with status ${response.status}: ${body}`);
     }
 
 
