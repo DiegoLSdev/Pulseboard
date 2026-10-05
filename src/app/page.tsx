@@ -1,6 +1,6 @@
 import { listProjects } from "@/lib/projects";
 import { getVisits } from "@/lib/analytics";
-
+import { Sparkline } from "@/components/sparkline";
 
 export default async function HomePage() {
   const allProjects = await listProjects();
@@ -63,6 +63,9 @@ export default async function HomePage() {
                 <dd className="text-2xl font-semibold">{visits.pageViews}</dd>
               </div>
             </dl>
+            <div className="mt-4">
+              <Sparkline values={visits.days.map((day) => day.visitors)} />
+            </div>
           </li>
         ))}
       </ul>
