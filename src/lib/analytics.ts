@@ -19,12 +19,12 @@ type ApiRow = {
   pageviews:    number;
 };
 
-export async function getVisits(projectId: string): Promise<VisitsSummary> {
+export async function getVisits(projectId: string, numberOfDays: number = 7): Promise<VisitsSummary> {
     
     // Dates calculations (prev 7 days)
     const untilDate = new Date();
     const sinceDate = new Date(untilDate);
-    sinceDate.setDate(sinceDate.getDate() - 6);
+    sinceDate.setDate(sinceDate.getDate() - (numberOfDays - 1));
 
     const until = untilDate.toISOString().slice(0, 10);
     const since = sinceDate.toISOString().slice(0, 10);

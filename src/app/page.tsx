@@ -1,8 +1,21 @@
 import { listProjects } from "@/lib/projects";
 import { getVisits } from "@/lib/analytics";
 import { Sparkline } from "@/components/sparkline";
+import Link from "next/link";
 
-export default async function HomePage() {
+const RANGES = [
+  { days: 7, href: "/", label: "Last 7 days" },
+  { days: 30, href: "/?range=30d", label: "Last 30 days" },
+];
+
+export default async function HomePage({
+  searchParams,
+}: {searchParams: Promise<{ range?: string }>;
+}) {
+
+  const { range } = await searchParams;
+  const numberOfDays = range === "30d" ? 30 : 7;
+
   const allProjects = await listProjects();
   const projectsWithAnalytics = allProjects.filter((project) => project.analyticsEnabled);
   const pendingProjects = allProjects.filter((project) => !project.analyticsEnabled);
@@ -10,25 +23,39 @@ export default async function HomePage() {
   const cards = await Promise.all(
     projectsWithAnalytics.map(async (project) => ({
       project,
-      visits: await getVisits(project.id),
+      visits: await getVisits(project.id, numberOfDays),
     })),
   );
 
-  cards.sort((a, b) => Number(b.visits) - Number(a.visits));
+  cards.sort((a, b) => b.visits.visitors - a.visits.visitors);
 
-  const { totalVisitors, totalPageViews } = cards.reduce(
-    (acc, card) => {
-      acc.totalVisitors += card.visits.visitors;
-      acc.totalPageViews += card.visits.pageViews;
-      return acc;
-    },
-    { totalVisitors: 0, totalPageViews: 0 }
-  );
+  const totalVisitors = cards.reduce((sum, card) => sum + card.visits.visitors, 0);
+  const totalPageViews = cards.reduce((sum, card) => sum + card.visits.pageViews, 0);
 
   return (
-    <main className="mx-auto w-full max-w-5xl px-4 py-10 sm:px-6">
-      <h1 className="text-2xl font-semibold">Pulseboard</h1>
-      <p className="mt-1 text-sm opacity-70">Last 7 days</p>
+<main className="mx-auto w-full max-w-5xl px-4 py-10 sm:px-6">
+      <div className="flex flex-wrap items-center justify-between gap-4">
+        <h1 className="text-2xl font-semibold">Pulseboard</h1>
+        <nav
+          aria-label="Time range"
+          className="inline-flex rounded-lg border border-black/10 p-1 dark:border-white/15"
+        >
+          {RANGES.map((option) => (
+            <Link
+              key={option.days}
+              href={option.href}
+              aria-current={option.days === numberOfDays ? "page" : undefined}
+              className={
+                option.days === numberOfDays
+                  ? "rounded-md bg-black px-3 py-1.5 text-sm font-medium text-white dark:bg-white dark:text-black"
+                  : "rounded-md px-3 py-1.5 text-sm opacity-70 hover:opacity-100"
+              }
+            >
+              {option.label}
+            </Link>
+          ))}
+        </nav>
+      </div>
 
       <dl className="mt-6 grid gap-4 sm:grid-cols-3">
         <div className="rounded-xl border border-black/10 p-5 dark:border-white/15">
