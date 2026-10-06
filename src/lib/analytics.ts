@@ -21,7 +21,7 @@ type ApiRow = {
 
 export async function getVisits(projectId: string, numberOfDays: number = 7): Promise<VisitsSummary> {
     
-    // Dates calculations (prev 7 days)
+    // Date range: today and the first day of the period
     const untilDate = new Date();
     const sinceDate = new Date(untilDate);
     sinceDate.setDate(sinceDate.getDate() - (numberOfDays - 1));

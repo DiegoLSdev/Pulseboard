@@ -23,11 +23,12 @@ export async function vercelFetch(
         url.searchParams.set(key, value);
     }
 
-    // Call fetch(url, {headers: {Authoritzation: `Bearer ${token}`} })
+    // Call fetch
     const response = await fetch(url.toString(), {
         headers: {
             Authorization: `Bearer ${token}`,
         },
+        next: { revalidate: 300 },
     });
 
     // If response.ok is false throw an error including response.status
