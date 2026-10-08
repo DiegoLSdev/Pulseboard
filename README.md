@@ -95,7 +95,7 @@ in its own list and use your monthly events.
 
 - [x] Overview of every project with visitors and page views
 - [x] Password protection
-- [ ] Project detail page: top pages, referrers, countries
+- [x] Project detail page: top pages, referrers, countries
 - [ ] Optional history beyond the 30 days Hobby keeps
 
 ## License
