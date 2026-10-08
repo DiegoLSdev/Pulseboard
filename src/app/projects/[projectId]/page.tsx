@@ -4,6 +4,7 @@ import { BreakdownList } from "@/components/breakdown-list";
 import { Sparkline } from "@/components/sparkline";
 import { getBreakdown, getVisits } from "@/lib/analytics";
 import { listProjects } from "@/lib/projects";
+import { Trend } from "@/components/trend";
 
 const countryNames = new Intl.DisplayNames(["en"], { type: "region" });
 
@@ -87,6 +88,11 @@ export default async function ProjectPage({
           <div>
             <dt className="text-sm opacity-70">Visitors</dt>
             <dd className="mt-1 text-3xl font-semibold">{visits.visitors}</dd>
+            <Trend
+            current={visits.visitors}
+            previous={visits.previousVisitors}
+            numberOfDays={numberOfDays}
+            />
           </div>
           <div>
             <dt className="text-sm opacity-70">Page views</dt>

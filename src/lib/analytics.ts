@@ -8,15 +8,24 @@ export type DailyVisits = {
 }
 
 export type VisitsSummary = {
-    days: DailyVisits[];
-    visitors: number;
-    pageViews: number;
-}
+  days: DailyVisits[];
+  visitors: number;
+  pageViews: number;
+  previousVisitors: number | null;
+};
+
+const MAX_DAYS = 31;
 
 type ApiRow = {
     timestamp: string;
     visitors: number;
     pageviews: number;
+};
+
+type ApiBreakdownRow = {
+  visitors: number;
+  pageviews: number;
+  [dimension: string]: string | number | null;
 };
 
 function getDateRange(numberOfDays: number) {
@@ -33,9 +42,11 @@ function getDateRange(numberOfDays: number) {
 export async function getVisits(
     projectId: string,
     numberOfDays: number = 7,
-): Promise<VisitsSummary> {
+    ): Promise<VisitsSummary> {
 
-    const { since, until } = getDateRange(numberOfDays);
+    const canCompare = numberOfDays * 2 <= MAX_DAYS;
+    const { since, until } = getDateRange(canCompare ? numberOfDays * 2 : numberOfDays);
+    const currentSince = getDateRange(numberOfDays).since;
 
     const data = await vercelFetch("/v1/query/web-analytics/visits/aggregate", {
         projectId,
@@ -44,32 +55,28 @@ export async function getVisits(
         by: "day",
     });
 
-    // MAP
-    const days: DailyVisits[] = data.data.map((item: ApiRow) => ({
+    const allDays: DailyVisits[] = data.data.map((item: ApiRow) => ({
         date: item.timestamp.slice(0, 10),
         visitors: item.visitors,
         pageViews: item.pageviews,
     }));
 
+    const days = allDays.filter((day) => day.date >= currentSince);
+    const previousDays = allDays.filter((day) => day.date < currentSince);
     const visitors = days.reduce((sum, day) => sum + day.visitors, 0);
     const pageViews = days.reduce((sum, day) => sum + day.pageViews, 0);
+    const previousVisitors = canCompare
+    ? previousDays.reduce((sum, day) => sum + day.visitors, 0)
+    : null;
 
-    return { days, visitors, pageViews };
+  return { days, visitors, pageViews, previousVisitors };
 }
-
 export type Dimension = "route" | "referrerHostname" | "country";
-
 export type BreakdownRow = {
     /** The page, the referrer or the country code, depending on the dimension. */
     value: string;
     visitors: number;
     pageViews: number;
-};
-
-type ApiBreakdownRow = {
-  visitors: number;
-  pageviews: number;
-  [dimension: string]: string | number | null;
 };
 
 export async function getBreakdown(
