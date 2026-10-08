@@ -59,12 +59,6 @@ project in the Vercel dashboard, go to **Analytics** and click **Enable**.
 "Visitors" is the sum of each day's unique visitors. Someone who visits on two
 different days is counted twice.
 
-## Security note
-
-**The dashboard has no login yet.** If you deploy it, anyone who knows the URL
-can see your numbers. Until password protection lands, run Pulseboard locally
-or keep the URL to yourself.
-
 ## Roadmap
 
 - [x] Overview of every project with visitors and page views
