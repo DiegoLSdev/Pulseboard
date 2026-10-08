@@ -5,6 +5,7 @@ import { Sparkline } from "@/components/sparkline";
 import { getBreakdown, getVisits } from "@/lib/analytics";
 import { listProjects } from "@/lib/projects";
 import { Trend } from "@/components/trend";
+import { AutoRefresh } from "@/components/auto-refresh";
 
 const countryNames = new Intl.DisplayNames(["en"], { type: "region" });
 
@@ -53,6 +54,7 @@ export default async function ProjectPage({
 
   return (
     <main className="mx-auto w-full max-w-5xl px-4 py-10 sm:px-6">
+      <AutoRefresh />
       <Link href={`/${rangeQuery}`} className="text-sm opacity-70 hover:opacity-100">
         ← All projects
       </Link>

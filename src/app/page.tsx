@@ -2,7 +2,9 @@ import { listProjects } from "@/lib/projects";
 import { getVisits } from "@/lib/analytics";
 import { Sparkline } from "@/components/sparkline";
 import { Trend } from "@/components/trend";
+import { AutoRefresh } from "@/components/auto-refresh";
 import Link from "next/link";
+
 const RANGES = [
   { days: 7, href: "/", label: "Last 7 days" },
   { days: 30, href: "/?range=30d", label: "Last 30 days" },
@@ -39,6 +41,7 @@ export default async function HomePage({
 
   return (
     <main className="mx-auto w-full max-w-5xl px-4 py-10 sm:px-6">
+      <AutoRefresh />
       <div className="flex flex-wrap items-center justify-between gap-4">
         <h1 className="text-2xl font-semibold">Pulseboard</h1>
         <nav
