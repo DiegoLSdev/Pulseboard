@@ -4,6 +4,8 @@ import { Sparkline } from "@/components/sparkline";
 import { Trend } from "@/components/trend";
 import { AutoRefresh } from "@/components/auto-refresh";
 import Link from "next/link";
+import { after } from "next/server";
+import { syncHistory } from "@/lib/history";
 
 const RANGES = [
   { days: 7, href: "/", label: "Last 7 days" },
@@ -23,7 +25,9 @@ export default async function HomePage({
   const allProjects = await listProjects();
   const projectsWithAnalytics = allProjects.filter((project) => project.analyticsEnabled);
   const pendingProjects = allProjects.filter((project) => !project.analyticsEnabled);
-
+  
+  after(() => syncHistory(projectsWithAnalytics).catch(console.error));
+  
   const cards = await Promise.all(
     projectsWithAnalytics.map(async (project) => ({
       project,

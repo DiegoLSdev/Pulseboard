@@ -42,3 +42,7 @@ next-env.d.ts
 
 # DO NOT IGNORE 
 !.env.example
+
+# local history database
+*.db
+*.db-journal
