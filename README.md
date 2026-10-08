@@ -24,6 +24,7 @@ You need Node.js 20 or newer and [pnpm](https://pnpm.io).
 
 1. Create a Vercel access token at
    [vercel.com/account/tokens](https://vercel.com/account/tokens).
+
 2. Clone the repository and install the dependencies:
 
 ```bash
@@ -36,6 +37,12 @@ You need Node.js 20 or newer and [pnpm](https://pnpm.io).
 
 ```bash
    cp .env.example .env.local
+```
+
+4. Start the app and open [http://localhost:3000](http://localhost:3000):
+
+```bash
+   pnpm dev
 ```
 
 4. Start the app and open [http://localhost:3000](http://localhost:3000):
@@ -59,10 +66,35 @@ project in the Vercel dashboard, go to **Analytics** and click **Enable**.
 "Visitors" is the sum of each day's unique visitors. Someone who visits on two
 different days is counted twice.
 
+## Deploying (optional)
+
+Pulseboard is meant to run on your own machine, but you can deploy it to your
+own Vercel account if you want to check it from anywhere.
+
+1. Import the repository in Vercel (**Add New → Project**).
+2. Add these environment variables before deploying:
+
+   | Name | Value |
+   | --- | --- |
+   | `VERCEL_TOKEN` | A Vercel access token |
+   | `DASHBOARD_PASSWORD` | A long password to open the dashboard |
+
+3. Deploy.
+
+Do not enable Web Analytics on the Pulseboard project itself: it would show up
+in its own list and use your monthly events.
+
+## Security
+
+- Your token is only used on the server and never reaches the browser.
+- When deployed, the dashboard is locked until `DASHBOARD_PASSWORD` is set.
+  Running locally without it skips the login.
+- There is no limit on login attempts, so use a long password.
+
 ## Roadmap
 
 - [x] Overview of every project with visitors and page views
-- [ ] Password protection
+- [x] Password protection
 - [ ] Project detail page: top pages, referrers, countries
 - [ ] Optional history beyond the 30 days Hobby keeps
 
