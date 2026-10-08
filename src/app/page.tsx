@@ -10,11 +10,13 @@ const RANGES = [
 
 export default async function HomePage({
   searchParams,
-}: {searchParams: Promise<{ range?: string }>;
+}: {
+  searchParams: Promise<{ range?: string }>;
 }) {
 
   const { range } = await searchParams;
   const numberOfDays = range === "30d" ? 30 : 7;
+  const rangeQuery = numberOfDays === 30 ? "?range=30d" : "";
 
   const allProjects = await listProjects();
   const projectsWithAnalytics = allProjects.filter((project) => project.analyticsEnabled);
@@ -33,7 +35,7 @@ export default async function HomePage({
   const totalPageViews = cards.reduce((sum, card) => sum + card.visits.pageViews, 0);
 
   return (
-<main className="mx-auto w-full max-w-5xl px-4 py-10 sm:px-6">
+    <main className="mx-auto w-full max-w-5xl px-4 py-10 sm:px-6">
       <div className="flex flex-wrap items-center justify-between gap-4">
         <h1 className="text-2xl font-semibold">Pulseboard</h1>
         <nav
@@ -75,24 +77,26 @@ export default async function HomePage({
       <h2 className="mt-10 text-lg font-semibold">Projects</h2>
       <ul className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {cards.map(({ project, visits }) => (
-          <li
-            key={project.id}
-            className="rounded-xl border border-black/10 p-5 dark:border-white/15"
-          >
-            <h3 className="truncate font-medium">{project.name}</h3>
-            <dl className="mt-4 flex gap-8">
-              <div>
-                <dt className="text-xs opacity-70">Visitors</dt>
-                <dd className="text-2xl font-semibold">{visits.visitors}</dd>
+          <li key={project.id}>
+            <Link
+              href={`/projects/${project.id}${rangeQuery}`}
+              className="block rounded-xl border border-black/10 p-5 transition-colors hover:border-black/30 dark:border-white/15 dark:hover:border-white/40"
+            >
+              <h3 className="truncate font-medium">{project.name}</h3>
+              <dl className="mt-4 flex gap-8">
+                <div>
+                  <dt className="text-xs opacity-70">Visitors</dt>
+                  <dd className="text-2xl font-semibold">{visits.visitors}</dd>
+                </div>
+                <div>
+                  <dt className="text-xs opacity-70">Page views</dt>
+                  <dd className="text-2xl font-semibold">{visits.pageViews}</dd>
+                </div>
+              </dl>
+              <div className="mt-4">
+                <Sparkline values={visits.days.map((day) => day.visitors)} />
               </div>
-              <div>
-                <dt className="text-xs opacity-70">Page views</dt>
-                <dd className="text-2xl font-semibold">{visits.pageViews}</dd>
-              </div>
-            </dl>
-            <div className="mt-4">
-              <Sparkline values={visits.days.map((day) => day.visitors)} />
-            </div>
+            </Link>
           </li>
         ))}
       </ul>
