@@ -14,7 +14,7 @@ export type VisitsSummary = {
   previousVisitors: number | null;
 };
 
-const MAX_DAYS = 31;
+export const MAX_DAYS = 31;
 
 type ApiRow = {
     timestamp: string;
@@ -28,7 +28,7 @@ type ApiBreakdownRow = {
   [dimension: string]: string | number | null;
 };
 
-function getDateRange(numberOfDays: number) {
+export function getDateRange(numberOfDays: number) {
     const untilDate = new Date();
     const sinceDate = new Date(untilDate);
     sinceDate.setDate(sinceDate.getDate() - (numberOfDays - 1));

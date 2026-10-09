@@ -1,11 +1,13 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { AutoRefresh } from "@/components/auto-refresh";
 import { BreakdownList } from "@/components/breakdown-list";
 import { Sparkline } from "@/components/sparkline";
-import { getBreakdown, getVisits } from "@/lib/analytics";
-import { listProjects } from "@/lib/projects";
 import { Trend } from "@/components/trend";
-import { AutoRefresh } from "@/components/auto-refresh";
+import { MAX_DAYS, getBreakdown } from "@/lib/analytics";
+import { getVisitsWithHistory, resolveDays } from "@/lib/history";
+import { listProjects } from "@/lib/projects";
+import { RANGES, parseRange, rangeQuery } from "@/lib/ranges";
 
 const countryNames = new Intl.DisplayNames(["en"], { type: "region" });
 
@@ -31,10 +33,14 @@ export default async function ProjectPage({
   params: Promise<{ projectId: string }>;
   searchParams: Promise<{ range?: string }>;
 }) {
-
   const { projectId } = await params;
   const { range } = await searchParams;
-  const numberOfDays = range === "30d" ? 30 : 7;
+  const rangeKey = parseRange(range);
+  const numberOfDays = await resolveDays(rangeKey);
+  const query = rangeQuery(rangeKey);
+
+  // Vercel only keeps 31 days of pages, referrers and countries.
+  const breakdownDays = Math.min(numberOfDays, MAX_DAYS);
 
   // Only show projects from this account with Web Analytics enabled.
   const projects = await listProjects();
@@ -43,19 +49,17 @@ export default async function ProjectPage({
 
   // The four requests are independent, so they run at the same time.
   const [visits, pages, referrers, countries] = await Promise.all([
-    getVisits(project.id, numberOfDays),
-    getBreakdown(project.id, "route", numberOfDays),
-    getBreakdown(project.id, "referrerHostname", numberOfDays),
-    getBreakdown(project.id, "country", numberOfDays),
+    getVisitsWithHistory(project.id, numberOfDays),
+    getBreakdown(project.id, "route", breakdownDays),
+    getBreakdown(project.id, "referrerHostname", breakdownDays),
+    getBreakdown(project.id, "country", breakdownDays),
   ]);
-
-  const rangeQuery = numberOfDays === 30 ? "?range=30d" : "";
-
 
   return (
     <main className="mx-auto w-full max-w-5xl px-4 py-10 sm:px-6">
       <AutoRefresh />
-      <Link href={`/${rangeQuery}`} className="text-sm opacity-70 hover:opacity-100">
+
+      <Link href={`/${query}`} className="text-sm opacity-70 hover:opacity-100">
         ← All projects
       </Link>
 
@@ -63,18 +67,15 @@ export default async function ProjectPage({
         <h1 className="text-2xl font-semibold">{project.name}</h1>
         <nav
           aria-label="Time range"
-          className="inline-flex rounded-lg border border-black/10 p-1 dark:border-white/15"
+          className="inline-flex flex-wrap rounded-lg border border-black/10 p-1 dark:border-white/15"
         >
-          {[
-            { days: 7, href: `/projects/${project.id}`, label: "Last 7 days" },
-            { days: 30, href: `/projects/${project.id}?range=30d`, label: "Last 30 days" },
-          ].map((option) => (
+          {RANGES.map((option) => (
             <Link
-              key={option.days}
-              href={option.href}
-              aria-current={option.days === numberOfDays ? "page" : undefined}
+              key={option.key}
+              href={`/projects/${project.id}${rangeQuery(option.key)}`}
+              aria-current={option.key === rangeKey ? "page" : undefined}
               className={
-                option.days === numberOfDays
+                option.key === rangeKey
                   ? "rounded-md bg-black px-3 py-1.5 text-sm font-medium text-white dark:bg-white dark:text-black"
                   : "rounded-md px-3 py-1.5 text-sm opacity-70 hover:opacity-100"
               }
@@ -91,9 +92,9 @@ export default async function ProjectPage({
             <dt className="text-sm opacity-70">Visitors</dt>
             <dd className="mt-1 text-3xl font-semibold">{visits.visitors}</dd>
             <Trend
-            current={visits.visitors}
-            previous={visits.previousVisitors}
-            numberOfDays={numberOfDays}
+              current={visits.visitors}
+              previous={visits.previousVisitors}
+              numberOfDays={numberOfDays}
             />
           </div>
           <div>
@@ -106,7 +107,14 @@ export default async function ProjectPage({
         </div>
       </div>
 
-      <div className="mt-6 grid gap-4 lg:grid-cols-3">
+      {numberOfDays > MAX_DAYS && (
+        <p className="mt-6 text-sm opacity-70">
+          Pages, referrers and countries show the last {MAX_DAYS} days: Vercel
+          does not keep them for longer.
+        </p>
+      )}
+
+      <div className="mt-4 grid gap-4 lg:grid-cols-3">
         <BreakdownList title="Top pages" rows={pages} />
         <BreakdownList title="Referrers" rows={referrers} formatValue={referrerName} />
         <BreakdownList title="Countries" rows={countries} formatValue={countryName} />
