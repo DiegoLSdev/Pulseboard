@@ -3,23 +3,33 @@ import { getVisits } from "@/lib/analytics";
 import { Sparkline } from "@/components/sparkline";
 import { Trend } from "@/components/trend";
 import { AutoRefresh } from "@/components/auto-refresh";
+import { parseSort, getTrendValue, SORTS, type SortKey } from "@/lib/sort";
 import Link from "next/link";
 import { after } from "next/server";
 import { syncHistory } from "@/lib/history";
 
 const RANGES = [
-  { days: 7, href: "/", label: "Last 7 days" },
-  { days: 30, href: "/?range=30d", label: "Last 30 days" },
+  { days: 7, key: "7d", label: "Last 7 days" },
+  { days: 30, key: "30d", label: "Last 30 days" },
 ];
+
+function buildQuery(rangeKey: string, sortKey: SortKey): string {
+  const params = new URLSearchParams();
+  if (rangeKey === "30d") params.set("range", "30d");
+  if (sortKey !== "visitors") params.set("sort", sortKey);
+  const str = params.toString();
+  return str ? `?${str}` : "";
+}
 
 export default async function HomePage({
   searchParams,
 }: {
-  searchParams: Promise<{ range?: string }>;
+  searchParams: Promise<{ range?: string; sort?: string }>;
 }) {
-
-  const { range } = await searchParams;
+  const { range, sort } = await searchParams;
   const numberOfDays = range === "30d" ? 30 : 7;
+  const currentRangeKey = numberOfDays === 30 ? "30d" : "7d";
+  const currentSort = parseSort(sort);
   const rangeQuery = numberOfDays === 30 ? "?range=30d" : "";
 
   const allProjects = await listProjects();
@@ -35,7 +45,22 @@ export default async function HomePage({
     })),
   );
 
-  cards.sort((a, b) => b.visits.visitors - a.visits.visitors);
+  cards.sort((a, b) => {
+    switch (currentSort) {
+      case "pageviews":
+        return b.visits.pageViews - a.visits.pageViews;
+      case "name":
+        return a.project.name.localeCompare(b.project.name, undefined, { sensitivity: "base" });
+      case "trend": {
+        const trendA = getTrendValue(a.visits.visitors, a.visits.previousVisitors);
+        const trendB = getTrendValue(b.visits.visitors, b.visits.previousVisitors);
+        return trendB - trendA;
+      }
+      case "visitors":
+      default:
+        return b.visits.visitors - a.visits.visitors;
+    }
+  });
 
   const totalVisitors = cards.reduce((sum, card) => sum + card.visits.visitors, 0);
   const totalPageViews = cards.reduce((sum, card) => sum + card.visits.pageViews, 0);
@@ -52,20 +77,25 @@ export default async function HomePage({
           aria-label="Time range"
           className="inline-flex rounded-lg border border-black/10 p-1 dark:border-white/15"
         >
-          {RANGES.map((option) => (
-            <Link
-              key={option.days}
-              href={option.href}
-              aria-current={option.days === numberOfDays ? "page" : undefined}
-              className={
-                option.days === numberOfDays
-                  ? "rounded-md bg-black px-3 py-1.5 text-sm font-medium text-white dark:bg-white dark:text-black"
-                  : "rounded-md px-3 py-1.5 text-sm opacity-70 hover:opacity-100"
-              }
-            >
-              {option.label}
-            </Link>
-          ))}
+          {RANGES.map((option) => {
+            const isSelected = option.days === numberOfDays;
+            const query = buildQuery(option.key, currentSort);
+            const href = query ? `/${query}` : "/";
+            return (
+              <Link
+                key={option.days}
+                href={href}
+                aria-current={isSelected ? "page" : undefined}
+                className={
+                  isSelected
+                    ? "rounded-md bg-black px-3 py-1.5 text-sm font-medium text-white dark:bg-white dark:text-black"
+                    : "rounded-md px-3 py-1.5 text-sm opacity-70 hover:opacity-100"
+                }
+              >
+                {option.label}
+              </Link>
+            );
+          })}
         </nav>
       </div>
 
@@ -89,7 +119,37 @@ export default async function HomePage({
         </div>
       </dl>
 
-      <h2 className="mt-10 text-lg font-semibold">Projects</h2>
+      <div className="mt-10 flex flex-wrap items-center justify-between gap-4">
+        <h2 className="text-lg font-semibold">Projects</h2>
+        <div className="flex items-center gap-2">
+          <span className="text-xs opacity-70">Sort by:</span>
+          <nav
+            aria-label="Sort projects"
+            className="inline-flex rounded-lg border border-black/10 p-1 dark:border-white/15"
+          >
+            {SORTS.map((option) => {
+              const isSelected = option.key === currentSort;
+              const query = buildQuery(currentRangeKey, option.key);
+              const href = query ? `/${query}` : "/";
+              return (
+                <Link
+                  key={option.key}
+                  href={href}
+                  aria-current={isSelected ? "page" : undefined}
+                  className={
+                    isSelected
+                      ? "rounded-md bg-black px-2.5 py-1 text-xs font-medium text-white dark:bg-white dark:text-black"
+                      : "rounded-md px-2.5 py-1 text-xs opacity-70 hover:opacity-100"
+                  }
+                >
+                  {option.label}
+                </Link>
+              );
+            })}
+          </nav>
+        </div>
+      </div>
+
       <ul className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {cards.map(({ project, visits }) => (
           <li key={project.id}>
