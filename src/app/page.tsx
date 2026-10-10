@@ -1,8 +1,8 @@
 import { listProjects } from "@/lib/projects";
 import { getVisits } from "@/lib/analytics";
-import { Sparkline } from "@/components/sparkline";
-import { Trend } from "@/components/trend";
 import { AutoRefresh } from "@/components/auto-refresh";
+import { ProjectList } from "@/components/project-list";
+import { Trend } from "@/components/trend";
 import Link from "next/link";
 import { after } from "next/server";
 import { syncHistory } from "@/lib/history";
@@ -89,37 +89,11 @@ export default async function HomePage({
         </div>
       </dl>
 
-      <h2 className="mt-10 text-lg font-semibold">Projects</h2>
-      <ul className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {cards.map(({ project, visits }) => (
-          <li key={project.id}>
-            <Link
-              href={`/projects/${project.id}${rangeQuery}`}
-              className="block rounded-xl border border-black/10 p-5 transition-colors hover:border-black/30 dark:border-white/15 dark:hover:border-white/40"
-            >
-              <h3 className="truncate font-medium">{project.name}</h3>
-              <Trend
-                current={visits.visitors}
-                previous={visits.previousVisitors}
-                numberOfDays={numberOfDays}
-              />
-              <dl className="mt-4 flex gap-8">
-                <div>
-                  <dt className="text-xs opacity-70">Visitors</dt>
-                  <dd className="text-2xl font-semibold">{visits.visitors}</dd>
-                </div>
-                <div>
-                  <dt className="text-xs opacity-70">Page views</dt>
-                  <dd className="text-2xl font-semibold">{visits.pageViews}</dd>
-                </div>
-              </dl>
-              <div className="mt-4">
-                <Sparkline values={visits.days.map((day) => day.visitors)} />
-              </div>
-            </Link>
-          </li>
-        ))}
-      </ul>
+      <ProjectList
+        cards={cards}
+        numberOfDays={numberOfDays}
+        rangeQuery={rangeQuery}
+      />
 
       <h2 className="mt-10 text-lg font-semibold">
         Without Web Analytics ({pendingProjects.length})
