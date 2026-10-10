@@ -49,6 +49,26 @@ You need Node.js 20 or newer and [pnpm](https://pnpm.io).
 Only projects with Web Analytics enabled show numbers. To enable it, open a
 project in the Vercel dashboard, go to **Analytics** and click **Enable**.
 
+### Running with Docker
+
+You can also run Pulseboard with Docker and Docker Compose without installing Node.js or pnpm:
+
+1. Create `.env.local` from the example and add your `VERCEL_TOKEN`:
+
+```bash
+cp .env.example .env.local
+```
+
+2. Start the container:
+
+```bash
+docker compose up -d
+```
+
+3. Open [http://localhost:3000](http://localhost:3000).
+
+The database is stored in a named Docker volume (`pulseboard-data` at `/data/pulseboard.db`), ensuring history persists across container restarts and updates.
+
 ### Environment variables
 
 | Name | Required | Description |

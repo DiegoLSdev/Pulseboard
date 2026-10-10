@@ -1,0 +1,18 @@
+services:
+  pulseboard:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    env_file:
+      - path: .env.local
+        required: false
+    environment:
+      - DATABASE_URL=file:/data/pulseboard.db
+    volumes:
+      - pulseboard-data:/data
+    restart: unless-stopped
+
+volumes:
+  pulseboard-data:
