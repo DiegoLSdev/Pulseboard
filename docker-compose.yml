@@ -1,0 +1,15 @@
+services:
+  pulseboard:
+    build: .
+    ports:
+      - "3000:3000"
+    env_file: .env.local
+    environment:
+      # Keeps the history in the volume below, so it survives restarts.
+      DATABASE_URL: file:/data/pulseboard.db
+    volumes:
+      - pulseboard-data:/data
+    restart: unless-stopped
+
+volumes:
+  pulseboard-data:

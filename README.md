@@ -58,6 +58,26 @@ project in the Vercel dashboard, go to **Analytics** and click **Enable**.
 | `DATABASE_URL` | When deployed | Where the history is stored. Defaults to `pulseboard.db`. |
 | `DATABASE_AUTH_TOKEN` | With Turso | Token for a remote Turso database. |
 
+## Running with Docker
+
+If you prefer not to install Node.js and pnpm, you can run Pulseboard with
+[Docker](https://docs.docker.com/get-docker/).
+
+1. Create `.env.local` as described above, with your `VERCEL_TOKEN`.
+2. Add a `DASHBOARD_PASSWORD` to it. The container runs in production mode,
+   so the dashboard always asks for a password.
+3. Build and start the container:
+
+```bash
+docker compose up -d --build
+```
+
+4. Open [http://localhost:3000](http://localhost:3000).
+
+The history is stored in the `pulseboard-data` volume, so it survives
+restarts and rebuilds. To stop Pulseboard, run `docker compose down`. Adding
+`-v` to that command also deletes the history.
+
 ## How it works
 
 - Every request to Vercel is made on the server with your token. The token is
