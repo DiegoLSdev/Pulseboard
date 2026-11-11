@@ -9,6 +9,7 @@ services:
       DATABASE_URL: file:/data/pulseboard.db
     volumes:
       - pulseboard-data:/data
+    restart: unless-stopped
 
 volumes:
   pulseboard-data:
