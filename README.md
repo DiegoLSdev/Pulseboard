@@ -12,13 +12,15 @@ public Web Analytics API and puts every project on a single page.
 
 ## Features
 
-- Every project with Web Analytics enabled on one page, busiest first
+- Every project with Web Analytics enabled on one page, sorted the way you choose
+- Search box to filter projects by name
 - Visitors, page views and a sparkline of daily visitors per project
 - Change against the previous 7 days
 - A page per project with its top pages, referrers and countries
 - 7-day, 30-day, 90-day and all-time ranges
 - Your own history, so you keep data after Vercel drops it
 - Refreshes itself every 5 minutes while the tab is open
+- Runs with Docker if you prefer not to install Node.js
 
 ## Getting started
 
@@ -127,7 +129,7 @@ in its own list and use your monthly events.
 - [x] Password protection
 - [x] Project detail page: top pages, referrers, countries
 - [x] History beyond the 31 days Vercel keeps
-- [ ] Sort and filter projects
+- [x] Sort and filter projects
 - [ ] Store pages, referrers and countries in the history too
 
 ## License

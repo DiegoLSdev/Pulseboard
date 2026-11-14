@@ -1,5 +1,18 @@
 # Changelog
 
+## 0.3.0
+
+### Added
+
+- Sort projects on the overview by visitors, page views, trend or name
+- Filter projects by name as you type
+- Run Pulseboard with Docker, with the history kept in a volume
+
+### Thanks
+
+- @Fire162 for the sparkline tests (#6)
+
+
 ## 0.2.0
 
 ### Added
